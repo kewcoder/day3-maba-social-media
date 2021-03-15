@@ -59,7 +59,7 @@ const Room = (props) => {
 
          
         
-            socketRef.current = io.connect("/");
+            socketRef.current = io.connect('/');
 
             
             navigator.mediaDevices.getUserMedia({ video: false, audio: true }).then(stream => {
@@ -76,7 +76,7 @@ const Room = (props) => {
                 socketRef.current.emit("join room", joinData);
 
                 socketRef.current.on("room data", data => {
-                    // console.log(data)
+                    console.log(data)
                     setRoomData(data.roomData[0])
                     setUsersData(data.usersData)
                 })
@@ -166,7 +166,7 @@ const Room = (props) => {
     function showUsers(){
             return usersData.map(d => {
                 return (
-                    <div className="item-user" key={d.id}>
+                    <div key={d.id} className="item-user" >
                         <img src={d.avatar} alt="avatar" />
                         <span className="name"> { d.name } </span>
                     </div>

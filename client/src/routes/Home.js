@@ -20,7 +20,7 @@ const Home = (props) => {
 
     useEffect(() => {
       
-        socketRef.current = io.connect("/");
+        socketRef.current = io.connect('/');
 
         socketRef.current.emit("find room");
         socketRef.current.on("all rooms", data => {

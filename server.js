@@ -3,9 +3,9 @@ const express = require("express");
 const http = require("http");
 const app = express();
 const server = http.createServer(app);
-const socket = require("socket.io");
-const io = socket(server);
-
+const socket = require("socket.io")
+const io = socket(server)
+const path = require('path');
 const users = {};
 
 const socketToRoom = {};
@@ -13,10 +13,12 @@ const socketToRoom = {};
 let roomData = [];
 let userData = [];
 
+app.use(express.static('client/build'))
 
-app.get('/hello', (req, res) => {
-    res.send('Hello World!')
-})
+app.get('/*', (req, res, next) => {
+    res.sendFile(path.join(__dirname + '/client/build/index.html'));
+});
+  
 
 
 io.on('connection', socket => {
@@ -72,8 +74,6 @@ io.on('connection', socket => {
                 userIDInRoom.push(u)
             }
         })
-
-        serDataInRoom.push(userData[u])
 
         socket.emit("all users", userIDInRoom);
 
