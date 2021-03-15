@@ -35,6 +35,7 @@ const Room = (props) => {
     const [roomData, setRoomData] = useState([]);
     const [usersData, setUsersData] = useState([]);
     const [leaveUser, setLeaveUser] = useState([]);
+    const [mute, setMute] = useState(false);
 
     const socketRef = useRef();
     const userVideo = useRef();
@@ -55,14 +56,14 @@ const Room = (props) => {
             const roomName = props.match.params.name;
             const roomCode = props.match.params.code;
             
-
-
-         
-        
             socketRef.current = io.connect('/');
+
+
 
             
             navigator.mediaDevices.getUserMedia({ video: false, audio: true }).then(stream => {
+
+                
                 userVideo.current.srcObject = stream;
                 
                 let joinData = {
@@ -70,7 +71,7 @@ const Room = (props) => {
                     name: roomName,
                     code: roomCode,
                     roomID: roomID,
-                    user: {...login, id:socketRef.current.id }
+                    user: {...login, id:socketRef.current.id, mute: mute }
                 }
 
                 socketRef.current.emit("join room", joinData);
@@ -109,7 +110,6 @@ const Room = (props) => {
 
                 socketRef.current.on("user joined", payload => {
                     
-            
                     const peer = addPeer(payload.signal, payload.callerID, stream);
 
                     peersRef.current.push({
@@ -131,7 +131,7 @@ const Room = (props) => {
         
         }
         
-    }, [roomID,props,leaveUser]);
+    }, [roomID,props,leaveUser,mute]);
 
     function createPeer(userToSignal, callerID, stream) {
         const peer = new Peer({
@@ -164,7 +164,19 @@ const Room = (props) => {
     }
 
     function showUsers(){
-            return usersData.map(d => {
+
+            let data = usersData.filter(u => {
+                let id = leaveUser.includes(u.id)
+                if(id){
+                    return u.id !== id;
+                }else{
+                    return u;
+                }
+                 
+            })
+            console.log(data)
+            console.log(leaveUser)
+            return data.map(d => {
                 return (
                     <div key={d.id} className="item-user" >
                         <img src={d.avatar} alt="avatar" />
@@ -184,11 +196,12 @@ const Room = (props) => {
                         <Video key={index} peer={peer} />
                     );
                 })}
-                
 
            
            <div className="left">
                 <div className="content">
+                <h1>Maba. </h1>
+                <br />
                 {showUsers()}
                 </div>
            </div>
@@ -202,6 +215,14 @@ const Room = (props) => {
                     </div>
                     <div className="item">
                         Users : { roomData.length } joined
+                    </div>
+                    <div className="item twogender">
+                        <div className={(mute) ? 'gender active': 'gender'} onClick={()=> {setMute(!mute)}} >
+                            Mute
+                        </div>
+                        <div className="gender" >
+                            leave
+                        </div>
                     </div>
                </div>
            </div>

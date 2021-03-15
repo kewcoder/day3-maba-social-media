@@ -37,8 +37,9 @@
             & .item-user{
                 background: var(--bg);
                 color: var(--color);
-                width: 25%;
-                border-radius: 30px;
+                width: 100px;
+                height: 100px;
+                border-radius: 100%;
                 padding:20px;
                 text-align: center;
                 border: 0;
@@ -46,8 +47,14 @@
                 border: 1px solid var(--color);
                 margin-bottom: 10px;
                 cursor: pointer;
+                display: flex;
+                flex-wrap: wrap;
+                align-items: center;
+                justify-content: center;
+                overflow:scroll;
                 & img{
-                    width: 50%;
+                    width: 90%;
+                    border-radius: 100%;
                 }
                 & .name{
                     font-size: 12px;
@@ -57,6 +64,8 @@
                 display: flex;
                 padding: 20px;
                 margin-bottom: 10px;
+                width: 100%;
+
             }
             & .item{
                 background: var(--bg);

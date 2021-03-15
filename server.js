@@ -18,7 +18,7 @@ app.use(express.static('app'))
 app.get('/*', (req, res, next) => {
     res.sendFile(path.join(__dirname + '/app/index.html'));
 });
-  
+ 
 
 
 io.on('connection', socket => {
@@ -77,7 +77,9 @@ io.on('connection', socket => {
 
         socket.emit("all users", userIDInRoom);
 
-        users[roomID].map((u) =>{
+        socket.emit("room data", {usersData: userDataInRoom, roomData: roomData0});
+      
+        userIDInRoom.map((u) =>{
             if(userData[u] !== null){
                 io.to(u).emit("room data", {usersData: userDataInRoom, roomData: roomData0});
             }

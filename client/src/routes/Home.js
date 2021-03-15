@@ -35,7 +35,7 @@ const Home = (props) => {
 
     function create() {
         const id = uuid();
-        props.history.push(`/room/${id}/Room Name/${socketRef.current.id}/8`);
+        props.history.push(`/room/${id}/Room Name/${socketRef.current.id}/3000`);
     }
 
     function joinRoom(room) {
@@ -89,10 +89,9 @@ const Home = (props) => {
                         <div className="content">
                             <h1>Maba. </h1>
                             <div className="item" >Kenalan Yuk !</div>
-                            <div className="item">Masukkan Kode</div>
-
                             <div className="item active" onClick={create}>Buat Room</div>
                             <div className="item">Donasi</div>
+                            <div className="item">Back to Home</div>
 
                         </div>
                     </div>  

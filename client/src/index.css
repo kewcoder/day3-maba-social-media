@@ -57,8 +57,9 @@ body {
 .main .left .content .item-user {
   background: var(--bg);
   color: var(--color);
-  width: 25%;
-  border-radius: 30px;
+  width: 100px;
+  height: 100px;
+  border-radius: 100%;
   padding: 20px;
   text-align: center;
   border: 0;
@@ -66,10 +67,23 @@ body {
   border: 1px solid var(--color);
   margin-bottom: 10px;
   cursor: pointer;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-wrap: wrap;
+      flex-wrap: wrap;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  overflow: scroll;
 }
 
 .main .left .content .item-user img {
-  width: 50%;
+  width: 90%;
+  border-radius: 100%;
 }
 
 .main .left .content .item-user .name {
@@ -82,6 +96,7 @@ body {
   display: flex;
   padding: 20px;
   margin-bottom: 10px;
+  width: 100%;
 }
 
 .main .left .content .item {
