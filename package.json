@@ -9,8 +9,7 @@
     "socket.io": "^2.3.0"
   },
   "scripts": {
-    "start": "PROD=true node server.js",
-    "install": "cd client && npm run build"
+    "start": "PROD=true node server.js"
   },
   "engines": {
     "node": "14.x"

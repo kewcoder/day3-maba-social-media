@@ -13,10 +13,10 @@ const socketToRoom = {};
 let roomData = [];
 let userData = [];
 
-app.use(express.static('client/build'))
+app.use(express.static('app'))
 
 app.get('/*', (req, res, next) => {
-    res.sendFile(path.join(__dirname + '/client/build/index.html'));
+    res.sendFile(path.join(__dirname + '/app/index.html'));
 });
   
 
