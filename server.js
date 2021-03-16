@@ -113,7 +113,16 @@ io.on('connection', socket => {
 
         const roomID = socketToRoom[socket.id];
 
-        let newMessage = { ...message, avatar: userData[socket.id].avatar, name:userData[socket.id].name, id: socket.id}
+        let newMessage = {}
+
+        if(userData[socket.id]){
+            newMessage = { ...message, avatar: userData[socket.id].avatar, name:userData[socket.id].name, id: socket.id}
+
+        }else{
+            newMessage = { ...message, avatar: '', name: '', id: socket.id}
+
+        }
+        
         // console.log(newMessage)
         messages[roomID].push(newMessage)
 
