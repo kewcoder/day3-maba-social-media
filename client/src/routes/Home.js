@@ -10,29 +10,49 @@ const Home = (props) => {
         login: false,
         avatar: '',
         name: '',
-        major: '',
-        year: '',
+        // major: '',
+        // year: '',
         gender: ''
     });
     const [rooms, setRooms] = useState([]);
+    const [avatarList, setAvatarList] = useState('avatars');
     
     const socketRef = useRef();
 
+  
+
     useEffect(() => {
-      
+
+
+
+
         socketRef.current = io.connect('/');
 
         socketRef.current.emit("find room");
+
         socketRef.current.on("all rooms", data => {
+            console.log(data)
             setRooms(data)
         })
         
         if(localStorage.getItem("login")){
-            setLogin(JSON.parse(localStorage.getItem("login")))
+            if(props.location.search === '?login=true'){
+                setLogin({...JSON.parse(localStorage.getItem("login")), login:true})
+            }else{
+                setLogin(JSON.parse(localStorage.getItem("login")))
+            }
         }
-        
-    }, []);
 
+        
+
+        
+    }, [props,setRooms]);
+
+
+    function findRoom(){
+        socketRef.current.emit("find room");
+        
+    }
     function create() {
         const id = uuid();
         props.history.push(`/room/${id}/Room Name/${socketRef.current.id}/3000`);
@@ -46,7 +66,7 @@ const Home = (props) => {
     function updateLogin(){
 
         // cek if null
-        if(login.avatar === '' || login.name === '' || login.major === '' || login.year === '' || login.gender === ''){
+        if(login.avatar === '' || login.name === '' || login.gender === ''){
         
             // Isi dulu Boss
 
@@ -55,8 +75,8 @@ const Home = (props) => {
             localStorage.setItem('login',JSON.stringify({
                 avatar: login.avatar,
                 name: login.name,
-                major: login.major,
-                year: login.year,
+                // major: login.major,
+                // year: login.year,
                 gender: login.gender
             }))
         }
@@ -65,11 +85,15 @@ const Home = (props) => {
     }
 
     function showRoom(){
-        return rooms.map(room => {
-            return <div className="item" key={room.code} onClick={ () => joinRoom(room)}>
-                <h4>{ room.name }</h4>
-                <span>{ room.length } User | Room Code </span>
-                <span>{ room.code }</span>
+        return rooms.map((room, index) => {
+            return  <div className="item"
+            
+            style={{flexWrap:'wrap'}}
+            key={room.code} onClick={ () => joinRoom(room)}>
+                <img src={'/avatar/kawaii-animals/_'+(index+1)+'.svg'} alt="" width="50px" 
+                style={{marginRight:'10px'}}
+                />
+                <h4>{ room.name } ({ room.length })</h4>
             </div>
         })
     }
@@ -81,6 +105,51 @@ const Home = (props) => {
 
     }
 
+    const Avatars1 = () => {
+        let avatars = []
+
+        for(let no = 1; no <= 50;no++){
+            avatars.push(no)
+        }
+
+        return (<>
+                { avatars.map(i => {
+                    return <img  key={i} alt="avatar" className="img"  src={`/avatar/kawaii-avatars/_${i}.svg`} onClick={ () => { setAvatar(`/avatar/kawaii-avatars/_${i}.svg`)}}/>
+                }) }
+            </> )
+        
+    }
+
+    const Avatars2 = () => {
+        let avatars = []
+
+        for(let no = 1; no <= 50;no++){
+            avatars.push(no)
+        }
+
+        return (<>
+                { avatars.map(i => {
+                    return <img  key={i} alt="avatar" className="img"  src={`/avatar/kawaii-animals/_${i}.svg`} onClick={ () => { setAvatar(`/avatar/kawaii-animals/_${i}.svg`)}}/>
+                }) }
+            </> )
+        
+    }
+
+    const Avatars3 = () => {
+        let avatars = []
+
+        for(let no = 1; no <= 50;no++){
+            avatars.push(no)
+        }
+
+        return (<>
+                { avatars.map(i => {
+                    return <img  key={i} alt="avatar" className="img"  src={`/avatar/monster-emojis/_${i}.svg`} onClick={ () => { setAvatar(`/avatar/monster-emojis/_${i}.svg`)}}/>
+                }) }
+            </> )
+        
+    }
+
     return (
         <div className="main">
             { (login.login) ? 
@@ -89,34 +158,30 @@ const Home = (props) => {
                         <div className="content">
                             <h1>Maba. </h1>
                             <div className="item" >Kenalan Yuk !</div>
-                            <div className="item active" onClick={create}>Buat Room</div>
+                            <div className="item" onClick={create}>Buat Room</div>
+                            <div className="item">Unsil One Access</div>
+                            <div className="item" onClick={ () => setLogin({ ...login, login: false }) }>Profile</div>
                             <div className="item">Donasi</div>
-                            <div className="item">Back to Home</div>
 
                         </div>
                     </div>  
                     <div className="right">
                         <div className="content">
+                            <div className="item active" >Room Recomendasi</div>
                             {
                                 showRoom()
                             }
+                            <div className="item"  onClick={findRoom}>Reload</div>
+
                         </div>
                     </div>
                 </>
 
             : <div className="right">
                 <form id="login-form" className="content">
-                 <div className="item">
-                     <label>Avatar</label>
-                     <img alt="avatar" className={(login.avatar === '/avatar/1.png') ? 'img active' : 'img'}  src="./avatar/1.png" onClick={ () => { setAvatar('/avatar/1.png')}}/>
-                     <img alt="avatar" className={(login.avatar === '/avatar/2.png') ? 'img active' : 'img'}  src="./avatar/2.png" onClick={ () => { setAvatar('/avatar/2.png')}}/>
-                     <img alt="avatar" className={(login.avatar === '/avatar/3.png') ? 'img active' : 'img'}  src="./avatar/3.png" onClick={ () => { setAvatar('/avatar/3.png')}}/>
-                     <img alt="avatar" className={(login.avatar === '/avatar/4.png') ? 'img active' : 'img'}  src="./avatar/4.png" onClick={ () => { setAvatar('/avatar/4.png')}}/>
-                     <img alt="avatar" className={(login.avatar === '/avatar/5.png') ? 'img active' : 'img'}  src="./avatar/5.png" onClick={ () => { setAvatar('/avatar/5.png')}}/>
-                     <img alt="avatar" className={(login.avatar === '/avatar/6.png') ? 'img active' : 'img'}  src="./avatar/6.png" onClick={ () => { setAvatar('/avatar/6.png')}}/>
-                 </div>
+                
                 <input type="text" className="item" value={login.name} onChange={(e)=>{ setLogin({...login,name: e.target.value})}} placeholder="Name" />
-                <select className="item" value={login.major} onChange={(e)=>{ setLogin({...login,major: e.target.value})}} >
+                {/* <select className="item" value={login.major} onChange={(e)=>{ setLogin({...login,major: e.target.value})}} >
                     <option value="">
                             Select Major
                     </option>
@@ -137,15 +202,43 @@ const Home = (props) => {
                     <option value="2021">
                             Student Year 2021
                     </option>
-                </select>
-                    <div className="item twogender">
-                        <div className={(login.gender === 1) ? 'gender active' : 'gender'} onClick={()=>{ setLogin({...login,gender: 1})}} >
+                </select> */}
+                    <div className="item twoitem">
+                        <div className={(login.gender === 1) ? 'item_ active' : 'item_'} onClick={()=>{ setLogin({...login,gender: 1})}} >
                             Male
                         </div>
-                        <div className={(login.gender === 2) ? 'gender active' : 'gender'} onClick={()=>{ setLogin({...login,gender: 2})}}>
+                        <div className={(login.gender === 2) ? 'item_ active' : 'item_'} onClick={()=>{ setLogin({...login,gender: 2})}}>
                             Female
                         </div>
                     </div>
+                        
+                <div className="item">
+                    <img alt="" style={{width:'150px',height:'150px',margin: 'auto'}} src={login.avatar} />
+                </div>
+               
+                { (avatarList === 'avatars') ? 
+                    <div className="item">
+                        <Avatars1 />
+                    </div>
+                : ''}
+                { (avatarList === 'animals') ? 
+                    <div className="item">
+                        <Avatars2 />
+                    </div>
+                : ''}
+
+                { (avatarList === 'monsters') ? 
+                    <div className="item">
+                        <Avatars3 />
+                    </div>
+                : ''}
+
+                <div className="item twoitem">
+                    <div className={(avatarList === 'avatars') ? 'item_ active' : 'item_'} onClick={ () => setAvatarList('avatars')}>Avatar</div>
+                    <div className={(avatarList === 'animals') ? 'item_ active' : 'item_'} onClick={ () => setAvatarList('animals')}>Animals</div>
+                    <div className={(avatarList === 'monsters') ? 'item_ active' : 'item_'} onClick={ () => setAvatarList('monsters')}>Monsters</div>
+                </div>
+
                 <div className="item active" onClick={updateLogin}>Login</div>
                 </form>
             </div> 

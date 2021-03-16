@@ -5,8 +5,9 @@ import Room from "./routes/Room";
 
 
 function App() {
+  
   return (
-    <BrowserRouter>
+    <BrowserRouter >
       <Switch>
         <Route path="/" exact component={Home} />
         <Route path="/room/:roomID/:name/:code/:max" component={Room} />

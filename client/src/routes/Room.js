@@ -2,8 +2,12 @@ import React, { useEffect, useRef, useState } from "react";
 import io from "socket.io-client";
 import Peer from "simple-peer";
 import styled from "styled-components";
+import { useHistory } from 'react-router-dom'
 
 
+
+
+let messagesEnd = '';
 
 const StyledVideo = styled.video`
         width:0;
@@ -31,11 +35,17 @@ const Video = (props) => {
 const Room = (props) => {
     // const [joined, setJoined] = useState(false);
 
+
+    const history = useHistory()
+
+
     const [peers, setPeers] = useState([]);
     const [roomData, setRoomData] = useState([]);
     const [usersData, setUsersData] = useState([]);
     const [leaveUser, setLeaveUser] = useState([]);
-    const [mute, setMute] = useState(false);
+    // const [mute, setMute] = useState(false);
+    const [message, setMessage] = useState('');
+    const [messages, setMessages] = useState([]);
 
     const socketRef = useRef();
     const userVideo = useRef();
@@ -44,6 +54,29 @@ const Room = (props) => {
 
 
     useEffect(() => {    
+
+        scrollToBottom();
+
+    
+        history.listen( () => {
+            socketRef.current.emit("leave");
+        })
+
+        window.onbeforeunload = (event) => {
+            const e = event || window.event;
+            // Cancel the event
+            e.preventDefault();
+
+            socketRef.current.emit("leave");
+
+            if (e) {
+                e.returnValue = ''; // Legacy method for cross browser support
+            }
+            return ''; // Legacy method for cross browser support
+
+        };
+            
+    
         const login = JSON.parse(localStorage.getItem('login'))
 
        
@@ -52,38 +85,41 @@ const Room = (props) => {
         }else{
             
 
+
             const roomMax = props.match.params.max;
             const roomName = props.match.params.name;
             const roomCode = props.match.params.code;
             
             socketRef.current = io.connect('/');
 
-
-
             
             navigator.mediaDevices.getUserMedia({ video: false, audio: true }).then(stream => {
 
                 
                 userVideo.current.srcObject = stream;
-                
+
+
                 let joinData = {
                     max: roomMax,
                     name: roomName,
                     code: roomCode,
                     roomID: roomID,
-                    user: {...login, id:socketRef.current.id, mute: mute }
+                    user: {...login, id: socketRef.current.id, mute: true }
                 }
-
+                
                 socketRef.current.emit("join room", joinData);
 
                 socketRef.current.on("room data", data => {
-                    console.log(data)
                     setRoomData(data.roomData[0])
                     setUsersData(data.usersData)
                 })
 
+                socketRef.current.on("messages", data => {
+                    setMessages(data)
+                    scrollToBottom()
+                })
+
                 socketRef.current.on("user leave", data => {
-                    // console.log(data+" leave")
                     leaveUser.push(data)
                     setLeaveUser(leaveUser)
                 })
@@ -131,7 +167,7 @@ const Room = (props) => {
         
         }
         
-    }, [roomID,props,leaveUser,mute]);
+    }, [roomID,props,leaveUser,history]);
 
     function createPeer(userToSignal, callerID, stream) {
         const peer = new Peer({
@@ -163,22 +199,26 @@ const Room = (props) => {
         return peer;
     }
 
-    function showUsers(){
+    function showUsers(m){
 
             let data = usersData.filter(u => {
                 let id = leaveUser.includes(u.id)
                 if(id){
                     return u.id !== id;
                 }else{
-                    return u;
+                    if(m === 1){
+                        return u.mute !== true;
+                    }else{
+                        return u.mute !== false;
+                    }
                 }
                  
             })
-            console.log(data)
-            console.log(leaveUser)
-            return data.map(d => {
+            // console.log(data)
+            // console.log(leaveUser)
+            return data.map((d,index) => {
                 return (
-                    <div key={d.id} className="item-user" >
+                    <div key={index} className="item-user" >
                         <img src={d.avatar} alt="avatar" />
                         <span className="name"> { d.name } </span>
                     </div>
@@ -187,8 +227,88 @@ const Room = (props) => {
         
     }
 
+
+    const Emojis = () => {
+        let emojis = []
+
+        for(let no = 1; no <= 50;no++){
+            emojis.push(no)
+        }
+
+        return (<>
+                { emojis.map(i => {
+                    return <img style={{margin:'5px'}}  key={i} alt="r" className="img"  src={`/emoji/icon/_${i}.svg`} onClick={() => sendStiker(`/emoji/icon/_${i}.svg`)} />
+                }) }
+            </> )
+        
+    }
+
+    function sendMessage(m){
+        socketRef.current.emit("send message", { text:m, stiker: ""});
+        setMessage("")
+    }
+    function sendStiker(stiker){
+        socketRef.current.emit("send message", { text:"", stiker: stiker });
+    }
+
+    function leaveRoom(){
+        socketRef.current.emit("leave");
+        props.history.push('/?login=true')
+    }
+
+
+    function scrollToBottom () {
+        // console.log(messagesEnd)
+        messagesEnd.scrollIntoView({ behavior: "smooth" });
+    }
+
+    function showMessages(){
+        return (<>
+            {
+                messages.map((m,index) => {
+
+                    let classChat = {width:'100%',fontSize:'1rem',textAlign: 'right',padding:'10px',borderBottom:'1px solid var(--primary)'};
+
+                    if(m.id === socketRef.current.id){
+                        classChat = {width:'100%',float:'left',fontSize:'1rem',padding:'10px',borderBottom:'1px solid var(--primary)'};
+                    }
+
+                    return <>
+                    { (m.stiker === '') ?
+                        <div key={index} style={classChat}>
+                                <span>{m.name}</span> 
+                                <img src={m.avatar} style={{width:'20px',height:'20px',border:'2px solid var(--primary)',borderRadius:'100px'}} alt="" />
+                                <span style={{fontSize:'1.2rem'}}> { m.text }</span> 
+            
+                        </div> : ''} 
+                    { (m.text === '') ?
+                        <div style={classChat}>
+                                <span>{m.name}</span> 
+                                <img src={m.avatar} style={{width:'20px',height:'20px',border:'2px solid var(--primary)',borderRadius:'100px'}} alt="" />
+                                
+                                <img src={m.stiker} style={{width:'100px',height:'100px'}} alt="" />
+                        </div>
+                    : ''}
+
+                    
+
+                    </>
+                    
+                })
+
+                
+                
+            }
+            {scrollToBottom}
+        </>)
+        
+    }
+
     return (
+
+        
         <div className="main">
+
 
                <StyledVideo muted ref={userVideo} autoPlay playsInline />
                 {peers.map((peer, index) => {
@@ -199,16 +319,72 @@ const Room = (props) => {
 
            
            <div className="left">
-                <div className="content">
-                <h1>Maba. </h1>
+                <div className="content"
+                style={{
+                    maxHeight:'80vh',
+                    overflowY:'scroll'
+                }}>
+                <h1 >
+                    Maba. 
+                    <button className="item" style={{width:'100px',fontSize:'1rem',marginLeft:'auto',padding:'10px'}} onClick={leaveRoom}>Leave</button>
+                </h1>
                 <br />
-                {showUsers()}
+                {/* <h6 style={{width:'100%',padding:'30px'}}>Speakers :</h6> */}
+                {showUsers(1)}
+                {/* <h6 style={{width:'100%',padding:'30px'}}>Listeners :</h6> */}
+                {showUsers(2)}
                 </div>
            </div>
            <div className="right">
+
                <div className="content">
+
+                <div className="item" style={{
+                    height:'40vh',
+                }}>
+                    <div style={
+                        {
+                            width:'100%',
+                            height: '100%',
+                            overflowY:'scroll'
+                        }
+                    }>
+
+                
+                <div className="item" onClick={() => sendMessage("Hai ..")}>
+                    Join Chat ( { roomData.length } User)
+                </div>
+
+                {
+                    showMessages()
+                }
+               
+                
+
+                <div  style={{ float:"left", clear: "both" }}
+                    ref={(el) => { messagesEnd = el; }}>
+                </div>
+
+                </div>
+
+
+                </div>
+                <div className="item" style={{justifyContent:'left'}}>
+                    <Emojis />
+                </div>
+                <div className="item" >
+                    <input type="text" value={message} onChange={(e) => setMessage(e.target.value)} className="item" />
+                    <button onClick={()=>sendMessage(message)} className="item" style={{width:'100px',fontSize: '1rem',textAlign:'center'}}>
+                        Send
+                    </button>
+                </div>
+
+
+               </div>
+
+               {/* <div className="content">
                     <div className="item">
-                        Room Name :{ roomData.name }
+                        Room Name : { roomData.name }
                     </div>
                     <div className="item">
                         Room Code :{ roomData.code }
@@ -224,7 +400,7 @@ const Room = (props) => {
                             leave
                         </div>
                     </div>
-               </div>
+               </div> */}
            </div>
         </div>
     );
