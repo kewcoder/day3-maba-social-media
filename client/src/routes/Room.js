@@ -90,7 +90,7 @@ const Room = (props) => {
             const roomName = props.match.params.name;
             const roomCode = props.match.params.code;
             
-            socketRef.current = io.connect('/');
+            socketRef.current = io.connect('/',{transports: ['websocket']});
 
             
             navigator.mediaDevices.getUserMedia({ video: false, audio: true }).then(stream => {

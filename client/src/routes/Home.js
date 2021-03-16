@@ -26,7 +26,7 @@ const Home = (props) => {
 
 
 
-        socketRef.current = io.connect('/');
+        socketRef.current = io.connect('/',{transports: ['websocket']});
 
         socketRef.current.emit("find room");
 
