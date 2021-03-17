@@ -215,9 +215,11 @@ const Home = (props) => {
                         </div>
                     </div>
                         
-                <div className="item">
-                    <img alt="" style={{width:'150px',height:'150px',margin: 'auto'}} src={login.avatar} />
-                </div>
+                    {(login.avatar) ?
+                    <div className="item">
+                        <img alt="" style={{width:'150px',height:'150px',margin: 'auto'}} src={login.avatar} /> 
+                    </div>
+                    : ''}
                
                 { (avatarList === 'avatars') ? 
                     <div className="item">
